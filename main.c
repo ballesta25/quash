@@ -9,72 +9,72 @@
 
 char** getTokens(char* input, int* argc) 
 {
-  char **tokens = NULL;
+	char **tokens = NULL;
 
-  char *thisToken = strtok(input, " ");
-  int numTokens = 0;
+	char *thisToken = strtok(input, " ");
+	int numTokens = 0;
 
-  while(thisToken)
-  {
-    numTokens++;
-    tokens = realloc(tokens, numTokens * sizeof(char*));
+	while(thisToken)
+	{
+		numTokens++;
+		tokens = realloc(tokens, numTokens * sizeof(char*));
 
-    if (tokens == NULL)
-    {
-      printf("\nUnable to allocate memory during tokenization of input: %s\n", input);
-      return tokens;
-    }
+		if (tokens == NULL)
+		{
+			printf("\nUnable to allocate memory during tokenization of input: %s\n", input);
+			return tokens;
+		}
 
-    if (thisToken[0] == '"')
-    {
-      thisToken += 1;
-      sprintf(thisToken, "%s %s", thisToken, strtok(NULL, "\""));
-    }
+		if (thisToken[0] == '"')
+		{
+			thisToken += 1;
+			sprintf(thisToken, "%s %s", thisToken, strtok(NULL, "\""));
+		}
 
-    tokens[numTokens-1] = thisToken;
-    *argc = *argc + 1;
+		tokens[numTokens-1] = thisToken;
+		*argc = *argc + 1;
 
-    thisToken = strtok(NULL, " ");
+		thisToken = strtok(NULL, " ");
 
-  }
+	}
 
-  tokens = realloc(tokens, (numTokens+1) * sizeof(char*));
-  tokens[numTokens] = 0;
+	tokens = realloc(tokens, (numTokens+1) * sizeof(char*));
+	tokens[numTokens] = 0;
 
-  return tokens;
+	return tokens;
 }
 
 int main(int argc, char* argv[], char* envp[]) 
 {
 
-  char* input;
-  char prompt[128];
-  int numArgs;
-  while(1)
-  {
-    snprintf(prompt, sizeof(prompt), "%s : %s >", "dummy_user", "dummy_cwd");
-    input = readline(prompt);
-    if (*input)
-    {
-      char** tokens = getTokens(input, &numArgs);
+	char* input;
+	char prompt[128];
+	int numArgs;
+	while(1)
+	{
+		snprintf(prompt, sizeof(prompt), "%s : %s >", "dummy_user", "dummy_cwd");
+		input = readline(prompt);
+		if (*input)
+		{
+			char** tokens = getTokens(input, &numArgs);
 
-      if (strcmp(tokens[0],"exit") == 0 || strcmp(tokens[0], "quit") == 0)
-      {
-        break;
-      }
-      else
-      {
-        //DO THE COMMAND
-      }
-      printf("Input was:\n");
-      int i = 0;
-      for (; i < numArgs; i++)
-      {
-        printf("%s\n", tokens[i]);
-      }
+			if (strcmp(tokens[0],"exit") == 0 || strcmp(tokens[0], "quit") == 0)
+			{
+				break;
+			}
+			else
+			{
+				//DO THE COMMAND
+			}
+			printf("Input was:\n");
+			int i = 0;
+			for (; i < numArgs; i++)
+			{
+				printf("%s\n", tokens[i]);
+			}
 
-    }
-    printf("Input was: %s", input);
-    return EXIT_SUCCESS;
-  }
+		}
+		printf("Input was: %s", input);
+		return EXIT_SUCCESS;
+	}
 }
