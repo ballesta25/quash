@@ -45,6 +45,19 @@ void execTokens(int numTokens, char** tokens)
 	}
 }
 
+bool isSpecialToken(char* token)
+{
+	switch(token)
+	{
+	case "|":
+	case "<":
+	case ">":
+		//case "&": ? 
+		return true;
+	default:
+		return false;
+	}
+}
 
 int execSimple(simpleCmd* cmd, int* pipeIn, int* pipeOut)
 {
