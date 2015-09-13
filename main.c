@@ -9,9 +9,9 @@
 
 char** getTokens(char* input, int* argc) 
 {
-	char **tokens = NULL;
+	char** tokens = NULL;
 
-	char *thisToken = strtok(input, " ");
+	char* thisToken = strtok(input, " ");
 	int numTokens = 0;
 
 	while(thisToken)
@@ -52,11 +52,11 @@ int main(int argc, char* argv[], char* envp[])
 	int numArgs;
 	while(1)
 	{
-    char* user = getenv("USER");
-    char* home = getenv("HOME");
-    char* path = getenv("PATH");
-    char host[64];
-    gethostname(host, sizeof(host));
+		char* user = getenv("USER");
+		char* home = getenv("HOME");
+		char* path = getenv("PATH");
+		char host[64];
+		gethostname(host, sizeof(host));
 		snprintf(prompt, sizeof(prompt), "[%s@%s]$", user, host);
 		input = readline(prompt);
 		if (*input)
