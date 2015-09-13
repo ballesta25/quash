@@ -11,7 +11,7 @@ char** getTokens(char* input, int* argc)
 {
   char **tokens = NULL;
 
-  char *thisToken = strtok(input, " =");
+  char *thisToken = strtok(input, " ");
   int numTokens = 0;
 
   while(thisToken)
@@ -34,7 +34,7 @@ char** getTokens(char* input, int* argc)
     tokens[numTokens-1] = thisToken;
     *argc = *argc + 1;
 
-    thisToken = strtok(NULL, " =");
+    thisToken = strtok(NULL, " ");
 
   }
 
