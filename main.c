@@ -52,7 +52,12 @@ int main(int argc, char* argv[], char* envp[])
 	int numArgs;
 	while(1)
 	{
-		snprintf(prompt, sizeof(prompt), "%s : %s >", "dummy_user", "dummy_cwd");
+    char* user = getenv("USER");
+    char* home = getenv("HOME");
+    char* path = getenv("PATH");
+    char host[64];
+    gethostname(host, sizeof(host));
+		snprintf(prompt, sizeof(prompt), "[%s@%s]$", user, host);
 		input = readline(prompt);
 		if (*input)
 		{
@@ -74,7 +79,7 @@ int main(int argc, char* argv[], char* envp[])
 			}
 
 		}
-		printf("Input was: %s", input);
+		printf("Untokenized input was: %s\n", input);
 		return EXIT_SUCCESS;
 	}
 }
