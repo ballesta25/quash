@@ -7,9 +7,17 @@
  * 
  */
 
+#include <stdlib.h>
 #include <unistd.h>
+#include <stdbool.h>
 #include "simpleCmd.h"
 #include "pipeline.h"
+
+
+bool isSpecialToken(char* token);
+void runPipeline(pipeline* pl, int* pipeIn);
+int execSimple(simpleCmd* cmd, int* pipeIn, int* pipeOut);
+
 
 void execTokens(int numTokens, char** tokens)
 {
@@ -42,12 +50,12 @@ void execTokens(int numTokens, char** tokens)
 		i += j; // advances i to the next token to read
 		if (hasSpecial)
 		{
-			switch(tokens[i])
+			switch(tokens[i][0])
 			{
 
 			// deal w/ special token:
 			// '|' -> no action (?)
-			case "|" :
+			case '|' :
 				break;
 			// '<' -> convert to cat, move to front
 			// '>' -> convert to new builtin (writef)
@@ -69,12 +77,12 @@ void execTokens(int numTokens, char** tokens)
 
 bool isSpecialToken(char* token)
 {
-	switch(token)
+	switch(token[0])
 	{
-	case "|":
-	case "<":
-	case ">":
-		//case "&": ? 
+	case '|':
+	case '<':
+	case '>':
+		//case '&': ? 
 		return true;
 	default:
 		return false;
@@ -112,7 +120,7 @@ int execSimple(simpleCmd* cmd, int* pipeIn, int* pipeOut)
 			dup2(pipeOut[1], STDOUT_FILENO);
 		}
 		// use execvp ?  -- automatically finds based on $PATH
-		execv(cmd->name, cmd.->rgs);
+		execv(cmd->name, cmd->args);
 
 		exit(0);
 	}
