@@ -1,4 +1,4 @@
-all: main.o builtins.o
+all: main.o builtins.o exec.o
 	gcc main.o builtins.o -o quash -lreadline
 main.o: main.c builtins.c
 	gcc -c -g main.c builtins.c -lreadline
