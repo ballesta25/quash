@@ -4,35 +4,42 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <readline/readline.h>
+#include <errno.h>
 
 #define BUF_LEN 2048
 
-char** getTokens(char* input, int* argc) 
+char** getTokens(char* input, int* numArgs, int* isBackground) 
 {
 	char** tokens = NULL;
 
 	char* thisToken = strtok(input, " ");
 	int numTokens = 0;
-
+	int stringFinalAmpersand = 0;
 	while(thisToken)
 	{
 		numTokens++;
 		tokens = realloc(tokens, numTokens * sizeof(char*));
-
+		int tokenLength = strlen(thisToken);
+		stringFinalAmpersand = 0;
 		if (tokens == NULL)
 		{
 			printf("\nUnable to allocate memory during tokenization of input: %s\n", input);
 			return tokens;
 		}
 
-		if (thisToken[0] == '"')
+		if (thisToken[0] == '"' && thisToken[tokenLength-1] != '"')
 		{
 			thisToken += 1;
 			sprintf(thisToken, "%s %s", thisToken, strtok(NULL, "\""));
+			tokenLength = strlen(thisToken);
+			if (thisToken[tokenLength-1] == '&')
+			{
+				stringFinalAmpersand = 1;
+			}
 		}
 
 		tokens[numTokens-1] = thisToken;
-		*argc = *argc + 1;
+		*numArgs = *numArgs + 1;
 
 		thisToken = strtok(NULL, " ");
 
@@ -40,6 +47,12 @@ char** getTokens(char* input, int* argc)
 
 	tokens = realloc(tokens, (numTokens+1) * sizeof(char*));
 	tokens[numTokens] = 0;
+	if (!stringFinalAmpersand && tokens[numTokens-1][strlen(tokens[numTokens-1])-1] == '&')
+	{
+		tokens[numTokens-1][strlen(tokens[numTokens-1])-1] = 0;
+		*numArgs = *numArgs - 1;
+		*isBackground = 1;
+	}
 
 	return tokens;
 }
@@ -50,8 +63,12 @@ int main(int argc, char* argv[], char* envp[])
 	char* input;
 	char prompt[128];
 	int numArgs;
+	int isBackground;
+	unsigned int nextJobID = 1;
 	while(1)
 	{
+		numArgs = 0;
+		isBackground = 0;
 		char* user = getenv("USER");
 		char* home = getenv("HOME");
 		char* path = getenv("PATH");
@@ -59,9 +76,13 @@ int main(int argc, char* argv[], char* envp[])
 		gethostname(host, sizeof(host));
 		snprintf(prompt, sizeof(prompt), "[%s@%s]$", user, host);
 		input = readline(prompt);
+		char** tokens;
 		if (*input)
 		{
-			char** tokens = getTokens(input, &numArgs);
+			char* inputcpy;
+			inputcpy = malloc(sizeof(char) * strlen(input));
+			strcpy(inputcpy, input);
+			tokens = getTokens(input, &numArgs, &isBackground);
 
 			if (strcmp(tokens[0],"exit") == 0 || strcmp(tokens[0], "quit") == 0)
 			{
@@ -69,17 +90,40 @@ int main(int argc, char* argv[], char* envp[])
 			}
 			else
 			{
-				//DO THE COMMAND
-			}
-			printf("Input was:\n");
-			int i = 0;
-			for (; i < numArgs; i++)
-			{
-				printf("%s\n", tokens[i]);
-			}
+				if (isBackground)
+				{
+					//TODO: do paperwork!
+					int jid = nextJobID++;
+					int pid;
+					pid = fork();
+					if (pid == 0)
+					{
+						//setsid?
+						//TODO: DO THE COMMAND
+						daemon(1,1);
+						printf("[%d] %d\n", jid, getpid());
+						fprintf(stderr, "Dummy Output: I'm running the program!\n");
+						sleep(2);
+						fprintf(stderr, "Dummy Output: This is the last of the program's output!\n");
+						//TODO: WAIT!
+						int tmp_pid;
+						while (tmp_pid = waitpid(-1, NULL, 0))
+						{
+							if (errno == ECHILD)
+							{
+								break;
+							}
+						}
+						printf("\n[%d] %d finished %s\n", jid, getpid(), inputcpy);
+						return EXIT_SUCCESS;
 
+					}
+					else
+					{
+						
+					}
+				}
+			}
 		}
-		printf("Untokenized input was: %s\n", input);
-		return EXIT_SUCCESS;
 	}
 }
