@@ -1,3 +1,7 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
 #include "simpleCmd.h"
 #include "builtins.h"
 #define NUM_BUILTINS 5
@@ -39,6 +43,28 @@ int executeBuiltin(simpleCmd* cmd)
 				fprintf(stderr, "Error: argument to set command is ill-formatted: %s", cmd->args[1]);
 				return EXIT_FAILURE;
 			}
+		}
+	}
+	else if (strcmp(cmd->name, CD_STR) == 0)
+	{
+		if (cmd->args[1] != NULL)
+		{
+			if (!chdir(cmd->args[1]))
+			{
+				fprintf(stderr, "%s: No such file or directory\n");
+			}
+		}
+	}
+	else if (strcmp(cmd->name, PWD_STR) == 0)
+	{
+		char cwd[1024];
+		if (getcwd(cwd, sizeof(cwd)) != NULL)
+		{
+			printf("%s", cwd);
+		}
+		else
+		{
+			fprintf(stderr, "Error getting current working directory: %s\n", cwd);
 		}
 	}
 }
