@@ -5,6 +5,8 @@
 #include <limits.h>
 #include <readline/readline.h>
 #include <errno.h>
+#include <unistd.h>
+#include <sys/wait.h>
 
 #define BUF_LEN 2048
 
