@@ -12,12 +12,12 @@
 #include <stdbool.h>
 #include "simpleCmd.h"
 #include "pipeline.h"
+#include "builtins.c"
 
 
 bool isSpecialToken(char* token);
 void runPipeline(pipeline* pl, int* pipeIn);
 int execSimple(simpleCmd* cmd, int* pipeIn, int* pipeOut);
-
 
 void execTokens(int numTokens, char** tokens)
 {
@@ -119,8 +119,15 @@ int execSimple(simpleCmd* cmd, int* pipeIn, int* pipeOut)
 		{
 			dup2(pipeOut[1], STDOUT_FILENO);
 		}
-		// use execvp ?  -- automatically finds based on $PATH
-		execv(cmd->name, cmd->args);
+		if(isBuiltin(cmd))
+		{
+			executeBuiltin(cmd);
+		}
+		else
+		{
+			// use execvp ?  -- automatically finds based on $PATH
+			execv(cmd->name, cmd->args);
+		}
 
 		exit(0);
 	}

@@ -7,6 +7,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include "exec.c"
 
 #define BUF_LEN 2048
 
@@ -105,8 +106,8 @@ int main(int argc, char* argv[], char* envp[])
 						daemon(1,1);
 						printf("[%d] %d\n", jid, getpid());
 						fprintf(stderr, "Dummy Output: I'm running the program!\n");
-						sleep(2);
-						fprintf(stderr, "Dummy Output: This is the last of the program's output!\n");
+						execTokens(numArgs, tokens);
+							fprintf(stderr, "Dummy Output: This is the last of the program's output!\n");
 						//TODO: WAIT!
 						int tmp_pid;
 						while (tmp_pid = waitpid(-1, NULL, 0))
