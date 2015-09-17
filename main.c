@@ -126,6 +126,10 @@ int main(int argc, char* argv[], char* envp[])
 						
 					}
 				}
+				else //run in foreground
+				{
+					execTokens(numArgs, tokens);
+				}
 			}
 		}
 	}

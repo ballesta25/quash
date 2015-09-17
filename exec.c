@@ -12,7 +12,7 @@
 #include <stdbool.h>
 #include "simpleCmd.h"
 #include "pipeline.h"
-#include "builtins.c"
+#include "builtins.h"
 
 
 bool isSpecialToken(char* token);
