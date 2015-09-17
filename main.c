@@ -83,7 +83,7 @@ int main(int argc, char* argv[], char* envp[])
 		if (*input)
 		{
 			char* inputcpy;
-			inputcpy = malloc(sizeof(char) * strlen(input));
+			inputcpy = malloc(sizeof(char) * (strlen(input) + 1));
 			strcpy(inputcpy, input);
 			tokens = getTokens(input, &numArgs, &isBackground);
 
