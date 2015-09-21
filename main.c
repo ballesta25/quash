@@ -86,7 +86,7 @@ int main(int argc, char* argv[], char* envp[])
 			char* inputcpy;
 			inputcpy = malloc(sizeof(char) * (strlen(input) + 1));
 			strcpy(inputcpy, input);
-			tokens = getTokens(input, &numArgs, &isBackground);
+			tokens = getTokens(inputcpy, &numArgs, &isBackground);
 
 			if (strcmp(tokens[0],"exit") == 0 || strcmp(tokens[0], "quit") == 0)
 			{
@@ -127,10 +127,19 @@ int main(int argc, char* argv[], char* envp[])
 				else //run in foreground
 				{
 					execTokens(numArgs, tokens);
+					int tmp_pid;
+					while (tmp_pid = waitpid(-1, NULL, 0))
+					{
+						if (errno == ECHILD)
+						{
+							break;
+						}
+					}
 				}
 			}
 			add_history(input);
 		}
+		free(input);
 	}
 	printf("%s", "bye\n");
 }
