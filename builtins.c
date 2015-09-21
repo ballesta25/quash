@@ -2,14 +2,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <errno.h>
 #include "simpleCmd.h"
 #include "builtins.h"
-#define NUM_BUILTINS 5
-#define SET_STR "set"
-#define CD_STR "cd"
-#define PWD_STR "pwd"
-#define JOBS_STR "jobs"
-#define WRITEF_STR "writef"
 
 int isBuiltin(simpleCmd* cmd) 
 {
@@ -49,9 +44,9 @@ int executeBuiltin(simpleCmd* cmd)
 	{
 		if (cmd->args[1] != NULL)
 		{
-			if (!chdir(cmd->args[1]))
+			if (chdir(cmd->args[1]) < 0)
 			{
-				fprintf(stderr, "%s: No such file or directory\n");
+				fprintf(stderr, "%s: No such file or directory\n", cmd->args[1]);
 			}
 		}
 	}
