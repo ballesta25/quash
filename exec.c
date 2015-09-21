@@ -93,13 +93,16 @@ void runPipeline(pipeline* pl, int* pipeIn)
 {
 	if(pl == NULL)
 	{
+		//printf("First Block\n");
 		return;
 	}
 	if(pl->next == NULL)
 	{
+		//printf("Second Block\n");
 		execSimple(pl->command, pipeIn, NULL);
 		return;
 	}
+	//printf("Third 'block'\n");
 	int pipeOut[2];
 	pipe(pipeOut);
 	int pid = execSimple(pl->command, pipeIn, pipeOut);
@@ -108,11 +111,14 @@ void runPipeline(pipeline* pl, int* pipeIn)
 
 int execSimple(simpleCmd* cmd, int* pipeIn, int* pipeOut)
 {
+	//printf("HERE!\n");
 	int pid = fork();
-	if (pid = 0)
+	if (pid == 0)
 	{
+		//printf("Inside child!\n");
 		if(pipeIn != NULL)
 		{
+			//printf("STDIN??\n");
 			dup2(pipeIn[0], STDIN_FILENO);
 		}
 		if(pipeOut != NULL)
@@ -125,8 +131,9 @@ int execSimple(simpleCmd* cmd, int* pipeIn, int* pipeOut)
 		}
 		else
 		{
+			//printf("Doing it...\n");
 			// use execvp ?  -- automatically finds based on $PATH
-			execv(cmd->name, cmd->args);
+			printf("This is the exec call's return value: %d\n", execv(cmd->name, cmd->args));
 		}
 
 		exit(0);
