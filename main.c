@@ -11,6 +11,11 @@
 #include "exec.c"
 
 #define BUF_LEN 2048
+#define MAX_JOBS 128
+
+char* jobs[MAX_JOBS];
+int numJobs = 0;
+
 
 char** getTokens(char* input, int* numArgs, int* isBackground) 
 {
@@ -61,12 +66,49 @@ char** getTokens(char* input, int* numArgs, int* isBackground)
 	return tokens;
 }
 
+int addJob(char* job)
+{
+	if (numJobs < MAX_JOBS)
+	{
+		char* newJob = malloc(sizeof(char) * strlen(job) + 1);
+		strcpy(newJob, job);
+		jobs[numJobs] = newJob;
+		numJobs++;
+		return 0;
+	}
+	else
+	{
+		fprintf(stderr, "Too many background jobs!\n");
+		return -1;
+	}
+}
+
+int removeJob(int jid)
+{
+	char jidStr[64];
+	sprintf(jidStr, "%d", jid);
+	int i = 0;
+	for (; i < numJobs; i++)
+	{
+		if (strncmp(jidStr, (jobs + 1)[i], strlen(jidStr)) == 0)
+		{
+			//free(jobs[i]);
+			strcpy(jobs[i], jobs[numJobs]);
+			jobs[numJobs] = 0;
+			numJobs--;
+		}
+	}
+}
+
 int main(int argc, char* argv[], char* envp[]) 
 {
 
 	char* input;
 	char prompt[128];
 	int numArgs;
+
+
+
 	int isBackground;
 	unsigned int nextJobID = 1;
 	while(1)
@@ -99,11 +141,14 @@ int main(int argc, char* argv[], char* envp[])
 					//TODO: do paperwork!
 					int jid = nextJobID++;
 					int pid;
+					char newJob[BUF_LEN];
 					pid = fork();
 					if (pid == 0)
 					{
 						//setsid?
 						daemon(1,1);
+						sprintf(newJob, "[%d] %d %s", jid, getpid(), inputcpy);
+						addJob(newJob);
 						printf("[%d] %d\n", jid, getpid());
 						fprintf(stderr, "Dummy Output: I'm running the program!\n");
 						execTokens(numArgs, tokens);
@@ -116,6 +161,7 @@ int main(int argc, char* argv[], char* envp[])
 								break;
 							}
 						}
+						removeJob(jid);
 						printf("\n[%d] %d finished %s\n", jid, getpid(), inputcpy);
 						return EXIT_SUCCESS;
 
