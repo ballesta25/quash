@@ -10,6 +10,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdbool.h>
+#include <errno.h>
+#include <stdio.h>
 #include "simpleCmd.h"
 #include "pipeline.h"
 #include "builtins.h"
@@ -133,7 +135,16 @@ int execSimple(simpleCmd* cmd, int* pipeIn, int* pipeOut)
 		{
 			//printf("Doing it...\n");
 			// use execvp ?  -- automatically finds based on $PATH
+			if (execv(cmd->name, cmd->args) < 0)
+			{
+				fprintf(stderr, "Something went wrong!\n");
+				if (errno == ENOENT)
+				{
+					fprintf(stderr, "command not found...\n");
+				}
+			}
 			printf("This is the exec call's return value: %d\n", execv(cmd->name, cmd->args));
+			printf("With errno=%d\n",errno);
 		}
 
 		exit(0);
