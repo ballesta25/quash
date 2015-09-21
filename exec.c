@@ -35,9 +35,9 @@ void execTokens(int numTokens, char** tokens)
 	{
 		simpleCmd* cmd = malloc(sizeof(simpleCmd));
 		cmd->name = tokens[i];
-		
-// allocate enough space for all remaining tokens, plus null terminator
-// this will be more than we need in many cases, but it's easy
+
+		// allocate enough space for all remaining tokens, plus null terminator
+		// this will be more than we need in many cases, but it's easy
 		cmd->args = (char**) malloc((numTokens - i + 1) * sizeof(char*));
 		int j;
 		for(j = 0; j < numTokens - i; j++)
@@ -55,18 +55,18 @@ void execTokens(int numTokens, char** tokens)
 			switch(tokens[i][0])
 			{
 
-			// deal w/ special token:
-			// '|' -> no action (?)
+				// deal w/ special token:
+				// '|' -> no action (?)
 			case '|' :
 				break;
-			// '<' -> convert to cat, move to front
-			// '>' -> convert to new builtin (writef)
-			// '&' -> ? (deal w/ later? Should only occur at end)
+				// '<' -> convert to cat, move to front
+				// '>' -> convert to new builtin (writef)
+				// '&' -> ? (deal w/ later? Should only occur at end)
 			}			
 			i++; // advance past special
 		}
 		cmd->args[j] = NULL;
-		
+
 		pipeline* nextPipe = malloc(sizeof(pipeline));
 		nextPipe->command = cmd;
 		nextPipe->next = NULL;
@@ -114,42 +114,50 @@ void runPipeline(pipeline* pl, int* pipeIn)
 int execSimple(simpleCmd* cmd, int* pipeIn, int* pipeOut)
 {
 	//printf("HERE!\n");
-	int pid = fork();
-	if (pid == 0)
+	if (strcmp(cmd->name, CD_STR) == 0)
 	{
-		//printf("Inside child!\n");
-		if(pipeIn != NULL)
+		executeBuiltin(cmd);
+		return getpid();
+	}
+	else
+	{
+		int pid = fork();
+		if (pid == 0)
 		{
-			//printf("STDIN??\n");
-			dup2(pipeIn[0], STDIN_FILENO);
-		}
-		if(pipeOut != NULL)
-		{
-			dup2(pipeOut[1], STDOUT_FILENO);
-		}
-		if(isBuiltin(cmd))
-		{
-			executeBuiltin(cmd);
-		}
-		else
-		{
-			//printf("Doing it...\n");
-			// use execvp ?  -- automatically finds based on $PATH
-			if (execv(cmd->name, cmd->args) < 0)
+			//printf("Inside child!\n");
+			if(pipeIn != NULL)
 			{
-				fprintf(stderr, "Something went wrong!\n");
-				if (errno == ENOENT)
-				{
-					fprintf(stderr, "command not found...\n");
-				}
+				//printf("STDIN??\n");
+				dup2(pipeIn[0], STDIN_FILENO);
 			}
-			printf("This is the exec call's return value: %d\n", execv(cmd->name, cmd->args));
-			printf("With errno=%d\n",errno);
-		}
+			if(pipeOut != NULL)
+			{
+				dup2(pipeOut[1], STDOUT_FILENO);
+			}
+			if(isBuiltin(cmd))
+			{
+				executeBuiltin(cmd);
+			}
+			else
+			{
+				//printf("Doing it...\n");
+				// use execvp ?  -- automatically finds based on $PATH
+				if (execv(cmd->name, cmd->args) < 0)
+				{
+					fprintf(stderr, "Something went wrong!\n");
+					if (errno == ENOENT)
+					{
+						fprintf(stderr, "command not found...\n");
+					}
+				}
+				printf("This is the exec call's return value: %d\n", execv(cmd->name, cmd->args));
+				printf("With errno=%d\n",errno);
+			}
 
-		exit(0);
+			exit(0);
+		}
+		return pid;
 	}
 
-	return pid;
 };
 
