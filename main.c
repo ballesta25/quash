@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <readline/readline.h>
+#include <readline/history.h>
 #include <errno.h>
 #include <unistd.h>
 #include <sys/wait.h>
@@ -128,6 +129,7 @@ int main(int argc, char* argv[], char* envp[])
 					execTokens(numArgs, tokens);
 				}
 			}
+			add_history(input);
 		}
 	}
 }
