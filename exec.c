@@ -141,8 +141,8 @@ int execSimple(simpleCmd* cmd, int* pipeIn, int* pipeOut)
 			else
 			{
 				//printf("Doing it...\n");
-				// use execvp ?  -- automatically finds based on $PATH
-				if (execv(cmd->name, cmd->args) < 0)
+				// use execvp -- automatically finds based on $PATH
+				if (execvp(cmd->name, cmd->args) < 0)
 				{
 					fprintf(stderr, "Something went wrong!\n");
 					if (errno == ENOENT)
