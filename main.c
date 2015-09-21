@@ -132,4 +132,5 @@ int main(int argc, char* argv[], char* envp[])
 			add_history(input);
 		}
 	}
+	printf("%s", "bye\n");
 }
