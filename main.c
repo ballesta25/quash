@@ -102,13 +102,11 @@ int main(int argc, char* argv[], char* envp[])
 					if (pid == 0)
 					{
 						//setsid?
-						//TODO: DO THE COMMAND
 						daemon(1,1);
 						printf("[%d] %d\n", jid, getpid());
 						fprintf(stderr, "Dummy Output: I'm running the program!\n");
 						execTokens(numArgs, tokens);
-							fprintf(stderr, "Dummy Output: This is the last of the program's output!\n");
-						//TODO: WAIT!
+						fprintf(stderr, "Dummy Output: This is the last of the program's output!\n");
 						int tmp_pid;
 						while (tmp_pid = waitpid(-1, NULL, 0))
 						{
@@ -123,7 +121,6 @@ int main(int argc, char* argv[], char* envp[])
 					}
 					else
 					{
-						
 					}
 				}
 				else //run in foreground
