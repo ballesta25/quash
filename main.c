@@ -35,7 +35,7 @@ char** getTokens(char* input, int* numArgs, int* isBackground)
 			printf("\nUnable to allocate memory during tokenization of input: %s\n", input);
 			return tokens;
 		}
-
+		//TODO: Replace $PATH and $HOME
 		if (thisToken[0] == '"' && thisToken[tokenLength-1] != '"')
 		{
 			thisToken += 1;
@@ -85,17 +85,61 @@ int addJob(char* job)
 
 int removeJob(int jid)
 {
-	char jidStr[64];
-	sprintf(jidStr, "%d", jid);
+	if (numJobs > 0)
+	{
+		//printf("Entering...\n");
+		char jidStr[64];
+		sprintf(jidStr, "[%d]", jid);
+		int i = 0;
+		for (; i < numJobs; i++)
+		{
+			//printf("OK on: %d\n", i);
+			if (strncmp(jidStr, jobs[i], strlen(jidStr)) == 0)
+			{
+				//printf("DOING IT %d\n", i);
+				//printf("jobs[i] is: %s\n", jobs[i]);
+				//free(jobs[i]);
+				numJobs--;
+				jobs[i] = jobs[numJobs];
+				//strncpy(jobs[i], jobs[numJobs], strlen(jobs[numJobs]));
+				//printf("DID IT\n");
+				jobs[numJobs] = 0;
+				//printf("This is jobs[i] now: %s\n", jobs[i]);
+			}
+		}
+	}
+}
+
+void printJobs()
+{
+
+	//printf("Number of jobs: %d\n", numJobs);
 	int i = 0;
 	for (; i < numJobs; i++)
 	{
-		if (strncmp(jidStr, (jobs + 1)[i], strlen(jidStr)) == 0)
+		char* newJobStr = malloc(sizeof(char) * strlen(jobs[i]) + 1);
+		strcpy(newJobStr, jobs[i]);
+		char* pidStr = strtok(newJobStr, " ");
+		//printf("right meow it's %s", pidStr);
+		pidStr += 1;
+		int theJid = atoi(pidStr);
+		pidStr = strtok(NULL, " ");
+		//printf("pidStr is: %s\n", pidStr);
+		int thePid = atoi(pidStr);
+		int tmpPid = waitpid(thePid, NULL, WNOHANG);
+	//	printf("tmpPid is: %d", tmpPid);
+		//if (tmpPid == thePid)
+		int result = kill(thePid, 0);
+	//	printf("result: %d\n", result);
+		//printf("errno: %d", errno);
+		if (result != 0)
 		{
-			//free(jobs[i]);
-			strcpy(jobs[i], jobs[numJobs]);
-			jobs[numJobs] = 0;
-			numJobs--;
+			//printf("WOULD'VE REMOVED\n");
+			removeJob(theJid); 
+		}
+		else
+		{
+			printf("%s\n", jobs[i]);
 		}
 	}
 }
@@ -120,7 +164,7 @@ int main(int argc, char* argv[], char* envp[])
 		char* path = getenv("PATH");
 		char host[64];
 		gethostname(host, sizeof(host));
-		snprintf(prompt, sizeof(prompt), "[%s@%s]$", user, host);
+		snprintf(prompt, sizeof(prompt), "[%s@%s;IN QUASH]$", user, host);
 		input = readline(prompt);
 		char** tokens;
 		if (*input)
@@ -134,40 +178,71 @@ int main(int argc, char* argv[], char* envp[])
 			{
 				break;
 			}
+			else if (strcmp(tokens[0],"jobs") == 0)
+			{
+				printJobs();
+			}
 			else
 			{
 				if (isBackground)
 				{
 					//TODO: do paperwork!
 					int jid = nextJobID++;
-					int pid;
 					char newJob[BUF_LEN];
+					int pid;
 					pid = fork();
 					if (pid == 0)
 					{
 						//setsid?
-						daemon(1,1);
-						sprintf(newJob, "[%d] %d %s", jid, getpid(), inputcpy);
-						addJob(newJob);
-						printf("[%d] %d\n", jid, getpid());
-						fprintf(stderr, "Dummy Output: I'm running the program!\n");
-						execTokens(numArgs, tokens);
-						fprintf(stderr, "Dummy Output: This is the last of the program's output!\n");
-						int tmp_pid;
-						while (tmp_pid = waitpid(-1, NULL, 0))
+						//printf("Outside daemon prints fine\n");
+						//daemon(1,1);
+						int oldPid = getpid();
+						int nestedPid = fork();
+						if (nestedPid == 0)
 						{
-							if (errno == ECHILD)
+							//printf("Inside daemon too\n");
+							printf("[%d] %d\n", jid, oldPid);
+							execTokens(numArgs, tokens);
+							int tmp_pid;
+							while (tmp_pid = waitpid(-1, NULL, 0))
 							{
-								break;
+								if (errno == ECHILD)
+								{
+									break;
+								}
 							}
+							printf("\n[%d] %d finished %s\n", jid, oldPid, inputcpy);
+							//printf("This??\n");
+							return EXIT_SUCCESS;
 						}
-						removeJob(jid);
-						printf("\n[%d] %d finished %s\n", jid, getpid(), inputcpy);
-						return EXIT_SUCCESS;
+						else
+						{
+							int tmp_pid;
+							while (tmp_pid = waitpid(-1, NULL, 0))
+							{
+								if (errno == ECHILD)
+								{
+									break;
+								}
+							}
+							return EXIT_SUCCESS;
+						}
 
 					}
 					else
 					{
+						sprintf(newJob, "[%d] %d %s", jid, pid, inputcpy);
+						addJob(newJob);
+							/*int tmp_pid;
+							while (tmp_pid = waitpid(-1, NULL, 0))
+							{
+								if (errno == ECHILD)
+								{
+									break;
+								}
+							}
+							removeJob(jid);*/
+						//removeJob(jid);
 					}
 				}
 				else //run in foreground
