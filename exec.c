@@ -21,6 +21,7 @@
 bool isSpecialToken(char* token);
 void runPipeline(pipeline* pl, int* pipeIn);
 int execSimple(simpleCmd* cmd, int* pipeIn, int* pipeOut);
+void freePipeline(pipeline* pl);
 
 void execTokens(int numTokens, char** tokens)
 {
@@ -59,12 +60,15 @@ void execTokens(int numTokens, char** tokens)
 				// deal w/ special token:
 				// '|' -> no action (?)
 			case '|' :
+				i++;
 				break;
 				// '<' -> convert to cat, move to front
 				// '>' -> convert to new builtin (writef)
+			case '>' :
+				tokens[i] = "writef";
+				break;
 				// '&' -> ? (deal w/ later? Should only occur at end)
 			}			
-			i++; // advance past special
 		}
 		cmd->args[j] = NULL;
 
@@ -76,6 +80,7 @@ void execTokens(int numTokens, char** tokens)
 	}
 	// drop dummy block, pass null for stdin
 	runPipeline(pipe->next, NULL);
+	freePipeline(pipe);
 }
 
 bool isSpecialToken(char* token)
@@ -110,6 +115,20 @@ void runPipeline(pipeline* pl, int* pipeIn)
 	pipe(pipeOut);
 	int pid = execSimple(pl->command, pipeIn, pipeOut);
 	runPipeline(pl->next, pipeOut);
+}
+
+void freePipeline(pipeline* pl)
+{
+	if(pl->next != NULL)
+	{
+		freePipeline(pl->next);
+	}
+	if(pl->command != NULL)
+	{
+		free(pl->command->args);
+		free(pl->command);
+	}
+	free(pl);
 }
 
 int execSimple(simpleCmd* cmd, int* pipeIn, int* pipeOut)
