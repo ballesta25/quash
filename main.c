@@ -259,6 +259,7 @@ int main(int argc, char* argv[], char* envp[])
 				}
 			}
 			add_history(input);
+			free(inputcpy);
 		}
 		free(input);
 	}
