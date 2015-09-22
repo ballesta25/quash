@@ -115,6 +115,8 @@ void runPipeline(pipeline* pl, int* pipeIn)
 	pipe(pipeOut);
 	int pid = execSimple(pl->command, pipeIn, pipeOut);
 	runPipeline(pl->next, pipeOut);
+	close(pipeOut[0]);
+	close(pipeOut[1]);
 }
 
 void freePipeline(pipeline* pl)
@@ -149,10 +151,14 @@ int execSimple(simpleCmd* cmd, int* pipeIn, int* pipeOut)
 			{
 				//printf("STDIN??\n");
 				dup2(pipeIn[0], STDIN_FILENO);
+				close(pipeIn[0]);
+				close(pipeIn[1]);
 			}
 			if(pipeOut != NULL)
 			{
 				dup2(pipeOut[1], STDOUT_FILENO);
+				close(pipeOut[0]);
+				close(pipeOut[1]);
 			}
 			if(isBuiltin(cmd))
 			{
