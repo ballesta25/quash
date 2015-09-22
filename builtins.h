@@ -10,4 +10,11 @@
 
 int isBuiltin(simpleCmd* cmd);
 int executeBuiltin(simpleCmd* cmd);
+int addJob(char*);
+int removeJob(int);
+void printJobs();
+#define MAX_JOBS 128
+
+char* jobs[MAX_JOBS];
+int numJobs;
 #endif

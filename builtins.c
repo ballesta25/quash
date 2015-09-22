@@ -63,3 +63,99 @@ int executeBuiltin(simpleCmd* cmd)
 		}
 	}
 }
+
+int addJob(char* job)
+{
+	if (numJobs < MAX_JOBS)
+	{
+		char* newJob = malloc(sizeof(char) * strlen(job) + 1);
+		strcpy(newJob, job);
+		jobs[numJobs] = newJob;
+		numJobs++;
+		return 0;
+	}
+	else
+	{
+		fprintf(stderr, "Too many background jobs!\n");
+		return -1;
+	}
+}
+
+int removeJob(int jid)
+{
+	if (numJobs > 0)
+	{
+		//printf("Entering...\n");
+		char jidStr[64];
+		sprintf(jidStr, "[%d]", jid);
+		int i = 0;
+		for (; i < numJobs; i++)
+		{
+			//printf("OK on: %d\n", i);
+			if (strncmp(jidStr, jobs[i], strlen(jidStr)) == 0)
+			{
+				//printf("DOING IT %d\n", i);
+				//printf("jobs[i] is: %s\n", jobs[i]);
+				//free(jobs[i]);
+				numJobs--;
+				jobs[i] = jobs[numJobs];
+				//strncpy(jobs[i], jobs[numJobs], strlen(jobs[numJobs]));
+				//printf("DID IT\n");
+				jobs[numJobs] = 0;
+				//printf("This is jobs[i] now: %s\n", jobs[i]);
+			}
+		}
+	}
+}
+
+int isJobByPid(int pid)
+{
+	int i = 0;
+	for (; i < numJobs; i++)
+	{
+		char* newJobStr = malloc(sizeof(char) * strlen(jobs[i]) + 1);
+		strcpy(newJobStr, jobs[i]);
+		char* pidStr = strtok(newJobStr, " ");
+		pidStr = strtok(NULL, " ");
+		if (atoi(pidStr) == pid)
+		{
+			return 1;
+		}
+
+	}
+	return 0;
+}
+
+void printJobs()
+{
+
+	//printf("Number of jobs: %d\n", numJobs);
+	int i = 0;
+	for (; i < numJobs; i++)
+	{
+		char* newJobStr = malloc(sizeof(char) * strlen(jobs[i]) + 1);
+		strcpy(newJobStr, jobs[i]);
+		char* pidStr = strtok(newJobStr, " ");
+		//printf("right meow it's %s", pidStr);
+		pidStr += 1;
+		int theJid = atoi(pidStr);
+		pidStr = strtok(NULL, " ");
+		//printf("pidStr is: %s\n", pidStr);
+		int thePid = atoi(pidStr);
+		int tmpPid = waitpid(thePid, NULL, WNOHANG);
+	//	printf("tmpPid is: %d", tmpPid);
+		//if (tmpPid == thePid)
+		int result = kill(thePid, 0);
+	//	printf("result: %d\n", result);
+		//printf("errno: %d", errno);
+		if (result != 0)
+		{
+			//printf("WOULD'VE REMOVED\n");
+			removeJob(theJid); 
+		}
+		else
+		{
+			printf("%s\n", jobs[i]);
+		}
+	}
+}
