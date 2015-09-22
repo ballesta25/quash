@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include "exec.c"
+#include "builtins.h"
 
 #define BUF_LEN 2048
 
@@ -96,10 +97,10 @@ int main(int argc, char* argv[], char* envp[])
 			{
 				break;
 			}
-			else if (strcmp(tokens[0],"jobs") == 0)
-			{
-				printJobs();
-			}
+			//else if (strcmp(tokens[0],"jobs") == 0)
+			//{
+			//	printJobs();
+			//}
 			else
 			{
 				if (isBackground)

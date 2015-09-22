@@ -3,6 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
+#include <sys/wait.h>
 #include "simpleCmd.h"
 #include "builtins.h"
 
@@ -61,6 +62,10 @@ int executeBuiltin(simpleCmd* cmd)
 		{
 			fprintf(stderr, "Error getting current working directory: %s\n", cwd);
 		}
+	}
+	else if (strcmp(cmd->name, JOBS_STR) == 0)
+	{
+		printJobs();
 	}
 }
 
