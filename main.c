@@ -110,6 +110,24 @@ int removeJob(int jid)
 	}
 }
 
+int isJobByPid(int pid)
+{
+	int i = 0;
+	for (; i < numJobs; i++)
+	{
+		char* newJobStr = malloc(sizeof(char) * strlen(jobs[i]) + 1);
+		strcpy(newJobStr, jobs[i]);
+		char* pidStr = strtok(newJobStr, " ");
+		pidStr = strtok(NULL, " ");
+		if (atoi(pidStr) == pid)
+		{
+			return 1;
+		}
+
+	}
+	return 0;
+}
+
 void printJobs()
 {
 
@@ -252,6 +270,10 @@ int main(int argc, char* argv[], char* envp[])
 					while (tmp_pid = waitpid(-1, NULL, 0))
 					{
 						if (errno == ECHILD)
+						{
+							break;
+						}
+						else if (!isJobByPid(tmp_pid))
 						{
 							break;
 						}
