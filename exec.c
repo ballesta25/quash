@@ -136,7 +136,7 @@ void freePipeline(pipeline* pl)
 int execSimple(simpleCmd* cmd, int* pipeIn, int* pipeOut)
 {
 	//printf("HERE!\n");
-	if (strcmp(cmd->name, CD_STR) == 0)
+	if (strcmp(cmd->name, CD_STR) == 0 || strcmp(cmd->name, SET_STR) == 0)
 	{
 		executeBuiltin(cmd);
 		return getpid();
