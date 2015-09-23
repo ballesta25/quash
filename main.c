@@ -18,6 +18,13 @@ char** getTokens(char* input, int* numArgs, int* isBackground)
 {
 	char** tokens = NULL;
 
+	/*if (input[strlen(input)-1] == '&')
+	{
+		printf("YUP, BACKGROUND\n");
+		*isBackground = 1;
+		input[strlen(input)-1] = 0;
+	}*/
+
 	char* thisToken = strtok(input, " ");
 	int numTokens = 0;
 	int stringFinalAmpersand = 0;
@@ -33,6 +40,14 @@ char** getTokens(char* input, int* numArgs, int* isBackground)
 			return tokens;
 		}
 		//TODO: Replace $PATH and $HOME
+		if (strcmp(thisToken, "$PATH") == 0)
+		{
+			thisToken = getenv("PATH");
+		}
+		else if (strcmp(thisToken, "$HOME") == 0)
+		{
+			thisToken = getenv("HOME");
+		}
 		if (thisToken[0] == '"' && thisToken[tokenLength-1] != '"')
 		{
 			thisToken += 1;
@@ -76,6 +91,7 @@ int main(int argc, char* argv[], char* envp[])
 	unsigned int nextJobID = 1;
 	while(1)
 	{
+	//printf("WHAT IS PATH??: %s\n",getenv("PATH"));
 		numArgs = 0;
 		isBackground = 0;
 		char* user = getenv("USER");
