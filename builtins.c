@@ -50,13 +50,20 @@ int executeBuiltin(simpleCmd* cmd)
 				fprintf(stderr, "%s: No such file or directory\n", cmd->args[1]);
 			}
 		}
+		else
+		{
+			if (chdir(getenv("HOME")) < 0)
+			{
+				fprintf(stderr, "%s: No such file or directory\n", getenv("HOME"));
+			}
+		}
 	}
 	else if (strcmp(cmd->name, PWD_STR) == 0)
 	{
 		char cwd[1024];
 		if (getcwd(cwd, sizeof(cwd)) != NULL)
 		{
-			printf("%s", cwd);
+			printf("%s\n", cwd);
 		}
 		else
 		{
