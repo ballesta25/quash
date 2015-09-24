@@ -1,0 +1,3 @@
+cd /home/priley/Documents
+pwd > /home/priley/EECS_678/quash/grader/homecheck.txt
+quit

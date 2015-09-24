@@ -1,0 +1,2 @@
+cp  -f process.txt exec.txt
+quit
