@@ -40,14 +40,6 @@ char** getTokens(char* input, int* numArgs, int* isBackground)
 			return tokens;
 		}
 		//TODO: Replace $PATH and $HOME
-		if (strcmp(thisToken, "$PATH") == 0)
-		{
-			thisToken = getenv("PATH");
-		}
-		else if (strcmp(thisToken, "$HOME") == 0)
-		{
-			thisToken = getenv("HOME");
-		}
 		if (thisToken[0] == '"' && thisToken[tokenLength-1] != '"')
 		{
 			thisToken += 1;
@@ -57,6 +49,28 @@ char** getTokens(char* input, int* numArgs, int* isBackground)
 			{
 				stringFinalAmpersand = 1;
 			}
+		}
+		else if (thisToken[0] == '"' && thisToken[tokenLength-1] == '"')
+		{
+			thisToken[tokenLength-1] = 0;
+			thisToken += 1;
+			tokenLength = strlen(thisToken);
+		}
+		if (strncmp(thisToken, "$PATH", 5) == 0)
+		{
+			char* p = getenv("PATH");
+			char* newToken = malloc(sizeof(char) * (strlen(p) + strlen(thisToken) - 4));
+			sprintf(newToken, "%s%s", p, thisToken + 5);
+			thisToken = newToken;
+			tokenLength = strlen(thisToken);
+		}
+		else if (strncmp(thisToken, "$HOME", 5) == 0)
+		{
+			char* p = getenv("HOME");
+			char* newToken = malloc(sizeof(char) * (strlen(p) + strlen(thisToken) - 4));
+			sprintf(newToken, "%s%s", p, thisToken + 5);
+			thisToken = newToken;
+			tokenLength = strlen(thisToken);
 		}
 
 		tokens[numTokens-1] = thisToken;
