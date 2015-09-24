@@ -86,7 +86,6 @@ char** getTokens(char* input, int* numArgs, int* isBackground)
 
 int main(int argc, char* argv[], char* envp[]) 
 {
-
 	char* input;
 	char prompt[128];
 	int numArgs;
@@ -97,7 +96,6 @@ int main(int argc, char* argv[], char* envp[])
 	unsigned int nextJobID = 1;
 	while(1)
 	{
-		cleanJobs();
 		numArgs = 0;
 		isBackground = 0;
 		char* user = getenv("USER");
@@ -107,6 +105,7 @@ int main(int argc, char* argv[], char* envp[])
 		gethostname(host, sizeof(host));
 		snprintf(prompt, sizeof(prompt), "[%s@%s;IN QUASH]$", user, host);
 		input = readline(prompt);
+		cleanJobs();
 		char** tokens;
 		if (*input)
 		{

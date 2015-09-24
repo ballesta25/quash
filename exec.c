@@ -203,7 +203,7 @@ int execSimple(simpleCmd* cmd, int* pipeIn, int* pipeOut)
 					fprintf(stderr, "Something went wrong!\n");
 					if (errno == ENOENT)
 					{
-						fprintf(stderr, "command not found...\n");
+						fprintf(stderr, "command not found: %s\n", cmd->name);
 					}
 				}
 				printf("This is the exec call's return value: %d\n", execv(cmd->name, cmd->args));
