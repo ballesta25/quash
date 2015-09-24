@@ -60,7 +60,7 @@ char** getTokens(char* input, int* numArgs, int* isBackground)
 		}
 
 		tokens[numTokens-1] = thisToken;
-		*numArgs = *numArgs + 1;
+		//*numArgs = *numArgs + 1;
 
 		thisToken = strtok(NULL, " ");
 
@@ -70,11 +70,17 @@ char** getTokens(char* input, int* numArgs, int* isBackground)
 	tokens[numTokens] = 0;
 	if (!stringFinalAmpersand && tokens[numTokens-1][strlen(tokens[numTokens-1])-1] == '&')
 	{
-		tokens[numTokens-1][strlen(tokens[numTokens-1])-1] = 0;
-		*numArgs = *numArgs - 1;
+		if (strcmp(tokens[numTokens-1], "&") == 0)
+		{
+			numTokens--;
+		}
+		else
+		{
+			tokens[numTokens-1][strlen(tokens[numTokens-1])-1] = 0;
+		}
 		*isBackground = 1;
 	}
-
+	*numArgs = numTokens;
 	return tokens;
 }
 
@@ -91,7 +97,7 @@ int main(int argc, char* argv[], char* envp[])
 	unsigned int nextJobID = 1;
 	while(1)
 	{
-	//printf("WHAT IS PATH??: %s\n",getenv("PATH"));
+		cleanJobs();
 		numArgs = 0;
 		isBackground = 0;
 		char* user = getenv("USER");
@@ -121,21 +127,16 @@ int main(int argc, char* argv[], char* envp[])
 			{
 				if (isBackground)
 				{
-					//TODO: do paperwork!
 					int jid = nextJobID++;
 					char newJob[BUF_LEN];
 					int pid;
 					pid = fork();
 					if (pid == 0)
 					{
-						//setsid?
-						//printf("Outside daemon prints fine\n");
-						//daemon(1,1);
 						int oldPid = getpid();
 						int nestedPid = fork();
 						if (nestedPid == 0)
 						{
-							//printf("Inside daemon too\n");
 							printf("[%d] %d\n", jid, oldPid);
 							execTokens(numArgs, tokens);
 							int tmp_pid;
@@ -147,7 +148,6 @@ int main(int argc, char* argv[], char* envp[])
 								}
 							}
 							printf("\n[%d] %d finished %s\n", jid, oldPid, inputcpy);
-							//printf("This??\n");
 							return EXIT_SUCCESS;
 						}
 						else
@@ -168,16 +168,7 @@ int main(int argc, char* argv[], char* envp[])
 					{
 						sprintf(newJob, "[%d] %d %s", jid, pid, inputcpy);
 						addJob(newJob);
-							/*int tmp_pid;
-							while (tmp_pid = waitpid(-1, NULL, 0))
-							{
-								if (errno == ECHILD)
-								{
-									break;
-								}
-							}
-							removeJob(jid);*/
-						//removeJob(jid);
+						printJobs();
 					}
 				}
 				else //run in foreground
