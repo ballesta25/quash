@@ -110,6 +110,7 @@ int executeBuiltin(simpleCmd* cmd)
 			fprintf(file, "%s", buffer);
 			fflush(file);
 		}
+		fclose(file);
 	}
 	else if (strcmp(cmd->name, ECHO_STR) == 0)
 	{
