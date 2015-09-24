@@ -90,9 +90,12 @@ void execTokens(int numTokens, char** tokens)
 				break;
 			}
 			// '>' -> convert to new builtin (writef)
+			//        removes current cmd block to build a new one next iteration
 			case '>' :
 				tokens[i] = "writef";
-				break;
+				free(cmd->args);
+				free(cmd);
+				continue;
 				// '&' -> ? (deal w/ later? Should only occur at end) : dealt with in main
 			}			
 		}
