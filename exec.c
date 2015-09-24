@@ -8,6 +8,7 @@
  */
 
 #include <stdlib.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include <stdbool.h>
 #include <string.h>
@@ -25,12 +26,16 @@ void freePipeline(pipeline* pl);
 
 void execTokens(int numTokens, char** tokens)
 {
-	pipeline* pipe = malloc(sizeof(pipeline));
-	pipe->next = NULL;
-	pipe->command = NULL; 
+	pipeline* pl = malloc(sizeof(pipeline));
+	pl->next = NULL;
+	pl->command = NULL; 
 
-	pipeline* lastPipe = pipe;
+	pipeline* lastPipe = pl;
 
+	bool hasFileIn = false;
+	int fileIn[2]; // pretends to be a pipe to pass to execSimple
+	               // actually just a regular array
+	
 	bool hasSpecial = false;
 	int i;
 	for(i = 0; i < numTokens; hasSpecial = false)
@@ -57,17 +62,38 @@ void execTokens(int numTokens, char** tokens)
 			switch(tokens[i][0])
 			{
 
-				// deal w/ special token:
-				// '|' -> no action (?)
+			// deal w/ special token:
+			// '|' -> advance past to next token
 			case '|' :
 				i++;
 				break;
-				// '<' -> convert to cat, move to front
-				// '>' -> convert to new builtin (writef)
+			// '<' -> open file desriptor, set up pipe
+			case '<' :
+			{
+				i++;
+				if(i >= numTokens)
+				{
+					fprintf(stderr, "%s", "quash: syntax error after '<'\n");
+					return;
+				}
+				char* filename = tokens[i];
+				int fd = open(filename, O_RDONLY);
+				if(fd < 0)
+				{
+					fprintf(stderr, "quash: could not open file: %s\n", filename);
+					return;
+				}
+				hasFileIn = true;
+				fileIn[0]=fd;
+				fileIn[1]=fd;				
+				i++;
+				break;
+			}
+			// '>' -> convert to new builtin (writef)
 			case '>' :
 				tokens[i] = "writef";
 				break;
-				// '&' -> ? (deal w/ later? Should only occur at end)
+				// '&' -> ? (deal w/ later? Should only occur at end) : dealt with in main
 			}			
 		}
 		cmd->args[j] = NULL;
@@ -79,8 +105,12 @@ void execTokens(int numTokens, char** tokens)
 		lastPipe = nextPipe;
 	}
 	// drop dummy block, pass null for stdin
-	runPipeline(pipe->next, NULL);
-	freePipeline(pipe);
+	runPipeline(pl->next, hasFileIn ? fileIn : NULL);
+	freePipeline(pl);
+	if(hasFileIn)
+	{
+		close(fileIn[0]);
+	}
 }
 
 bool isSpecialToken(char* token)
