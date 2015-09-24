@@ -13,6 +13,7 @@ int executeBuiltin(simpleCmd* cmd);
 int addJob(char*);
 int removeJob(int);
 void printJobs();
+void cleanJobs();
 int isJobByPid(int);
 #define MAX_JOBS 128
 
