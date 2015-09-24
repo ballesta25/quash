@@ -59,6 +59,7 @@ void execTokens(int numTokens, char** tokens)
 		i += j; // advances i to the next token to read
 		if (hasSpecial)
 		{
+		specials:
 			switch(tokens[i][0])
 			{
 
@@ -87,6 +88,13 @@ void execTokens(int numTokens, char** tokens)
 				fileIn[0]=fd;
 				fileIn[1]=fd;				
 				i++;
+				// should be followed by a special symbol
+				// rather than a commaand, so jump to the
+				// appropriate place unless we are at the end
+				if(i < numTokens)
+				{
+					goto specials;
+				}
 				break;
 			}
 			// '>' -> convert to new builtin (writef)
