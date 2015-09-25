@@ -1,0 +1,3 @@
+Path: $PATH 
+-n -n 
+==== Environments Variables ==== 

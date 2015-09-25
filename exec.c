@@ -135,7 +135,6 @@ bool isSpecialToken(char* token)
 	case '|':
 	case '<':
 	case '>':
-		//case '&': ? 
 		return true;
 	default:
 		return false;
@@ -146,16 +145,13 @@ void runPipeline(pipeline* pl, int* pipeIn)
 {
 	if(pl == NULL)
 	{
-		//printf("First Block\n");
 		return;
 	}
 	if(pl->next == NULL)
 	{
-		//printf("Second Block\n");
 		execSimple(pl->command, pipeIn, NULL);
 		return;
 	}
-	//printf("Third 'block'\n");
 	int pipeOut[2];
 	pipe(pipeOut);
 	int pid = execSimple(pl->command, pipeIn, pipeOut);
@@ -180,7 +176,6 @@ void freePipeline(pipeline* pl)
 
 int execSimple(simpleCmd* cmd, int* pipeIn, int* pipeOut)
 {
-	//printf("HERE!\n");
 	if (strcmp(cmd->name, CD_STR) == 0 || strcmp(cmd->name, SET_STR) == 0)
 	{
 		executeBuiltin(cmd);
@@ -191,10 +186,8 @@ int execSimple(simpleCmd* cmd, int* pipeIn, int* pipeOut)
 		int pid = fork();
 		if (pid == 0)
 		{
-			//printf("Inside child!\n");
 			if(pipeIn != NULL)
 			{
-				//printf("STDIN??\n");
 				dup2(pipeIn[0], STDIN_FILENO);
 				close(pipeIn[0]);
 				close(pipeIn[1]);
@@ -211,7 +204,6 @@ int execSimple(simpleCmd* cmd, int* pipeIn, int* pipeOut)
 			}
 			else
 			{
-				//printf("Doing it...\n");
 				// use execvp -- automatically finds based on $PATH
 				if (execvp(cmd->name, cmd->args) < 0)
 				{

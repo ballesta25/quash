@@ -5,9 +5,7 @@ sleep 2
 ls -la | sort -r
 sleep 1
 clear
-echo "$date" > report.txt
-echo "User: $USER" >> report.txt
-echo "Path: $PATH" >> report.txt
+echo "Path: $PATH" > report.txt
 echo -n ""
 echo "==== Environments Variables ====" >> report.txt
 set >> report.txt

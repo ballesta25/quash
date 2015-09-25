@@ -19,7 +19,6 @@ char** getTokens(char* input, int* numArgs, int* isBackground)
 	char** tokens = NULL;
 
 	char* newInput = malloc(1024 * sizeof(char));
-	//strcpy(newInput, input);
 
 	int si = 0;
 	int si2 = 0;
@@ -45,14 +44,6 @@ char** getTokens(char* input, int* numArgs, int* isBackground)
 	newInput[si2] = input[si];
 	newInput[si2+1] = 0;
 
-	/*if (input[strlen(input)-1] == '&')
-	{
-		printf("YUP, BACKGROUND\n");
-		*isBackground = 1;
-		input[strlen(input)-1] = 0;
-	}*/
-	//printf("input: %s\n", input);
-	//printf("newInput: %s\n", newInput);
 	input = newInput;
 	char* thisToken = strtok(input, " ");
 	int numTokens = 0;
@@ -102,7 +93,6 @@ char** getTokens(char* input, int* numArgs, int* isBackground)
 		}
 
 		tokens[numTokens-1] = thisToken;
-		//*numArgs = *numArgs + 1;
 
 		thisToken = strtok(NULL, " ");
 
@@ -124,11 +114,6 @@ char** getTokens(char* input, int* numArgs, int* isBackground)
 	}
 	*numArgs = numTokens;
 
-	/*int i = 0;
-	for (; i < numTokens; i++)
-	{
-		printf("Token %d: %s\n", i, tokens[i]);
-	}*/
 	return tokens;
 }
 
@@ -166,10 +151,6 @@ int main(int argc, char* argv[], char* envp[])
 			{
 				break;
 			}
-			//else if (strcmp(tokens[0],"jobs") == 0)
-			//{
-			//	printJobs();
-			//}
 			else
 			{
 				if (isBackground)
@@ -215,7 +196,6 @@ int main(int argc, char* argv[], char* envp[])
 					{
 						sprintf(newJob, "[%d] %d %s", jid, pid, input);
 						addJob(newJob);
-						printJobs();
 					}
 				}
 				else //run in foreground
