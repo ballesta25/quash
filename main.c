@@ -18,13 +18,42 @@ char** getTokens(char* input, int* numArgs, int* isBackground)
 {
 	char** tokens = NULL;
 
+	char* newInput = malloc(1024 * sizeof(char));
+	//strcpy(newInput, input);
+
+	int si = 0;
+	int si2 = 0;
+	for (; si < strlen(input) - 1; si++, si2++)
+	{
+		if (input[si + 1] == '|' && input[si] != ' ')
+		{
+			newInput[si2] = input[si];
+			newInput[si2+1] = ' ';
+			si2++;
+		}
+		else if (input[si + 1] != ' ' && input[si] == '|')
+		{
+			newInput[si2] = '|';
+			newInput[si2+1] = ' ';
+			si2++;
+		}
+		else
+		{
+			newInput[si2] = input[si];
+		}
+	}
+	newInput[si2] = input[si];
+	newInput[si2+1] = 0;
+
 	/*if (input[strlen(input)-1] == '&')
 	{
 		printf("YUP, BACKGROUND\n");
 		*isBackground = 1;
 		input[strlen(input)-1] = 0;
 	}*/
-
+	//printf("input: %s\n", input);
+	//printf("newInput: %s\n", newInput);
+	input = newInput;
 	char* thisToken = strtok(input, " ");
 	int numTokens = 0;
 	int stringFinalAmpersand = 0;
@@ -39,7 +68,6 @@ char** getTokens(char* input, int* numArgs, int* isBackground)
 			printf("\nUnable to allocate memory during tokenization of input: %s\n", input);
 			return tokens;
 		}
-		//TODO: Replace $PATH and $HOME
 		if (thisToken[0] == '"' && thisToken[tokenLength-1] != '"')
 		{
 			thisToken += 1;
@@ -95,6 +123,12 @@ char** getTokens(char* input, int* numArgs, int* isBackground)
 		*isBackground = 1;
 	}
 	*numArgs = numTokens;
+
+	/*int i = 0;
+	for (; i < numTokens; i++)
+	{
+		printf("Token %d: %s\n", i, tokens[i]);
+	}*/
 	return tokens;
 }
 
@@ -160,7 +194,7 @@ int main(int argc, char* argv[], char* envp[])
 									break;
 								}
 							}
-							printf("\n[%d] %d finished %s\n", jid, oldPid, inputcpy);
+							printf("\n[%d] %d finished %s\n", jid, oldPid, input);
 							return EXIT_SUCCESS;
 						}
 						else
@@ -179,7 +213,7 @@ int main(int argc, char* argv[], char* envp[])
 					}
 					else
 					{
-						sprintf(newJob, "[%d] %d %s", jid, pid, inputcpy);
+						sprintf(newJob, "[%d] %d %s", jid, pid, input);
 						addJob(newJob);
 						printJobs();
 					}
