@@ -99,7 +99,14 @@ void execTokens(int numTokens, char** tokens)
 			}
 			// '>' -> convert to new builtin (writef)
 			case '>' :
-				tokens[i] = "writef";
+				if (tokens[i][1] == '>')
+				{
+					tokens[i] = "appendf";
+				}
+				else
+				{
+					tokens[i] = "writef";
+				}
 				break;
 				// '&' -> ? (deal w/ later? Should only occur at end) : dealt with in main
 			}			

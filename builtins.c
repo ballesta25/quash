@@ -7,11 +7,9 @@
 #include "simpleCmd.h"
 #include "builtins.h"
 
-#define buffSize 256
-
 int isBuiltin(simpleCmd* cmd) 
 {
-	char* builtins[NUM_BUILTINS] = {SET_STR, CD_STR, PWD_STR, JOBS_STR, WRITEF_STR};
+	char* builtins[NUM_BUILTINS] = {SET_STR, CD_STR, PWD_STR, JOBS_STR, WRITEF_STR, APPENDF_STR};
 	int i = 0;
 	for (; i < NUM_BUILTINS; i++)
 	{
@@ -76,10 +74,11 @@ int executeBuiltin(simpleCmd* cmd)
 	{
 		printJobs();
 	}
-	else if (strcmp(cmd->name, WRITEF_STR) == 0)
+	else if (strcmp(cmd->name, WRITEF_STR) == 0 || strcmp(cmd->name, APPENDF_STR) == 0)
 	{
+		char* openMode = (strcmp(cmd->name, WRITEF_STR) == 0) ? "w" : "a";
 		char* filename = cmd->args[1];
-		FILE* file = fopen(filename, "w");
+		FILE* file = fopen(filename, openMode);
 		if(file == NULL)
 		{
 			fprintf(stderr, "quash: could not open file: %s\n", filename);
