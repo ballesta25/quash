@@ -1,0 +1,2 @@
+set HOME="$HOME/Documents"
+echo $HOME > process2.txt

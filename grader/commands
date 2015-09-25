@@ -1,0 +1,16 @@
+clear
+echo "Start reading the input file"
+rm -f report.txt
+sleep 2
+ls -la | sort -r
+sleep 1
+clear
+echo "$date" > report.txt
+echo "User: $USER" >> report.txt
+echo "Path: $PATH" >> report.txt
+echo -n ""
+echo "==== Environments Variables ====" >> report.txt
+set >> report.txt
+echo -n "========End of Process===========================" >> report.txt
+less report.txt
+

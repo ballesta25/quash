@@ -9,7 +9,7 @@
 
 int isBuiltin(simpleCmd* cmd) 
 {
-	char* builtins[NUM_BUILTINS] = {SET_STR, CD_STR, PWD_STR, JOBS_STR, WRITEF_STR, APPENDF_STR};
+	char* builtins[NUM_BUILTINS] = {SET_STR, CD_STR, PWD_STR, JOBS_STR, WRITEF_STR, ECHO_STR, APPENDF_STR};
 	int i = 0;
 	for (; i < NUM_BUILTINS; i++)
 	{
@@ -31,6 +31,25 @@ int executeBuiltin(simpleCmd* cmd)
 			char* newVal = strtok(NULL, "=");
 			if (envVar != NULL && newVal != NULL)
 			{
+				if (newVal[0] == '"' && newVal[strlen(newVal)-1] == '"')
+				{
+					newVal[strlen(newVal)-1] = 0;
+					newVal += 1;
+				}
+				if (strncmp(newVal, "$PATH", 5) == 0)
+				{
+					char* p = getenv("PATH");
+					char* newToken = malloc(sizeof(char) * (strlen(p) + strlen(newVal) - 4));
+					sprintf(newToken, "%s%s", p, newVal + 5);
+					newVal = newToken;
+				}
+				else if (strncmp(newVal, "$HOME", 5) == 0)
+				{
+					char* p = getenv("HOME");
+					char* newToken = malloc(sizeof(char) * (strlen(p) + strlen(newVal) - 4));
+					sprintf(newToken, "%s%s", p, newVal + 5);
+					newVal = newToken;
+				}
 				setenv(envVar, newVal, 1);
 				return EXIT_SUCCESS;
 			}
@@ -91,6 +110,16 @@ int executeBuiltin(simpleCmd* cmd)
 			fflush(file);
 		}
 		fclose(file);
+	}
+	else if (strcmp(cmd->name, ECHO_STR) == 0)
+	{
+		int i = 1;
+		while (cmd->args[i] != NULL)
+		{
+			printf("%s ", cmd->args[1]);
+			i++;
+		}
+		printf("\n");
 	}
 	else
 	{

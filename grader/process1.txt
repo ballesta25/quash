@@ -1,0 +1,1 @@
+/usr/lib64/qt-3.3/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/usr/lib64/openmpi/bin/:/opt/smlnj/bin/:/home/priley/bin 

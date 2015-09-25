@@ -1,0 +1,3 @@
+./quash < secondlevel.txt
+echo $PATH > process1.txt
+quit

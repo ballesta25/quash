@@ -1,0 +1,2 @@
+ls /home -la
+quit

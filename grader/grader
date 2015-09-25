@@ -1,0 +1,469 @@
+#!/bin/bash 
+
+#set -f	set -o noglob	Disable file name generation using metacharacters (globbing).
+#set -v	set -o verbose	Prints shell input lines as they are read.
+#set -x	set -o xtrace	Print command traces before executing command.
+echo "-------------------------------------------------------------------------"
+echo
+echo
+echo "*** Starting the grader script in folder: $PWD"
+echo "*** with home folder: $HOME ***"
+echo `date`
+
+if [ $1 ]; then
+	shell=$1
+else
+	shell="bash"
+fi
+echo "Shell is $shell"
+echo
+echo
+
+grade=0
+removeexpr1="bye"
+removeexpr2="quit"
+removeexpr3="cal"
+
+
+
+shellexsit=`which $shell`
+len=`echo $shellexsit|awk '{print length}'`
+
+if ((len==0)); then
+	echo "The requested shell is not in the path."
+	echo "The script is terminating."
+	exit 1
+fi
+
+
+#1. Run executables without arguments (10)
+#-------------------------------------------
+echo "1> Checking executable without arguments ..."
+
+
+cal > cal.txt
+$shell < executecommand.txt > caltest.txt
+if [ -e "caltest.txt" ]; then
+	if [ $shell != "bash" ]; then
+		sed -i -e "/$removeexpr1/d" -e "/$removeexpr2/d" -e "/$removeexpr3/d" caltest.txt 
+	fi
+	result=$(diff -q cal.txt caltest.txt)
+	if [ -z "$result" ]; then
+		grade=$((grade+10))
+		echo "Executable test passed. Current grade: $grade"
+		rm caltest.txt
+		
+	fi
+
+else
+	echo "The output file for executable command without arguments was not created. Test failed"
+fi
+echo
+
+
+#2. Run executables with arguments (10)
+#-------------------------------------------
+echo "2> Checking executable with arguments ..."
+ps -e > process.txt
+$shell < executecommandwithp.txt
+	
+if [ -e "exec.txt" ]; then
+	grade=$((grade+10))
+	echo "Running executable with arguments passed. Current grade: $grade"
+	rm process.txt exec.txt
+else
+	echo "Runing executable with arguments failed"
+	rm process.txt
+fi
+echo
+
+#3. set for HOME and PATH work properly (5)
+#------------------------------------------
+
+
+echo "3> Setting HOME and PATH ..."
+$shell < homepath.txt
+homesetto="/home"
+pathsetto="/home"
+returnvalue=0
+if [ -e "homecheck.txt" ]; then
+	if [ $shell != "bash" ]; then
+		sed -i -e "/$removeexpr1/d" -e "/$removeexpr2/d"  homecheck.txt 
+	fi
+	returnvalue=`cat homecheck.txt | grep -c /home`
+	if  ((returnvalue > 0)); then
+		grade=$((grade+2))
+		echo "set home test was passed. The current grade : $grade"
+	else
+		echo "set home test was failed."
+	fi  
+else
+	echo "File homecheck.txt does not exsit. Setting HOME test failed."
+fi
+		#set Path check
+returnvalue=0
+if [ -e "pathcheck.txt" ]; then
+	if [ $shell != "bash" ]; then
+		sed -i -e "/$removeexpr1/d" -e "/$removeexpr2/d"  pathcheck.txt 
+	fi
+	returnvalue=`cat pathcheck.txt | grep -c /home`
+	if ((returnvalue > 0)); then
+		grade=$((grade+3))
+		echo "set path test was passed. The current grade : $grade"
+	else
+		echo "set path test was failed."
+	fi 
+else
+	echo "File pathcheck.txt does not exsit. Setting PATH test failed."
+fi
+
+rm homecheck.txt pathcheck.txt
+echo
+
+
+#4. exit and quit work properly (5)
+#-------------------------------------------
+echo "4> Checking exit and quit ..."
+
+$shell < quitcommand.txt > quit.txt
+
+bye=0
+if [ -e "quit.txt" ]; then
+	bye=`cat quit.txt | grep -c bye` 
+	
+	
+else
+	echo "Could not find quit.txt"
+	echo "Quit test failed"
+	bye=0
+fi
+if ((bye > 0 )); then
+	grade=$((grade+5))
+	echo "Quit test passed. Current grade: $grade"
+	
+else
+	echo "Quit test failed"
+fi
+echo
+
+
+#5. cd (with and without arguments) works properly (5)
+#-----------------------------------------------------
+#				How can we make sure that a folder has been changed?
+echo "5> Checking cd ..."
+currentfolder=$PWD
+echo "cd $HOME/Documents" > hometest.txt
+echo "pwd > $currentfolder/homecheck.txt" >> $currentfolder/hometest.txt
+echo "quit" >> $currentfolder/hometest.txt
+$shell < hometest.txt 
+
+returnvalue=0
+if [ -e "homecheck.txt" ]; then
+	returnvalue=`cat homecheck.txt | grep -c "$HOME/Documents"`
+	if ((returnvalue > 0)); then
+		grade=$((grade+5))
+		echo "The first cd test was passed. The current grade : $grade"
+	else
+		echo "The first cd test was failed."
+	fi  
+else
+	echo "Could not find homecheck.txt file. The cd test was failed."
+fi
+
+cd $currentfolder
+echo
+# May add more tests
+
+
+
+#6. PATH works properly. Give error messages when the executable is not found (10)
+#-------------------------------------------
+
+echo "6> Checking PATH redircetion..."
+if [ -e "path.txt" ]; then
+	rm path.txt
+fi
+ls -la > pathtestcheck.txt
+currentpath=$PATH
+PATH="/home"
+export PATH
+
+$shell < pathtestcommand.txt > path.txt
+echo $?
+echo "The result of the execution: $?"
+PATH=$currentpath
+if [ -s "path.txt" ]; then
+	result=""
+	result=$(diff -q pathtestcheck.txt path.txt)
+	if [ ! -z "$result" ]; then
+		grade=$((grade+10))
+		echo "Path.txt exist but its content is different. Test passed. Current grade: $grade "
+
+	else
+		echo "Path redirection failed. The output files have similar data!"
+	fi
+else
+	grade=$((grade+10))
+	echo "ls -la did not work. Test passed. Current grade: $grade "
+fi
+
+echo
+
+
+#7. Child processes inherit the environment (5)
+#-------------------------------------------
+echo "7> Checking child processes ..."
+
+
+if [ -e "process1.txt" ]; then
+	rm process1.txt
+fi
+
+if [ -e "process2.txt" ]; then
+	rm process2.txt
+fi
+
+echo "$shell < secondlevel.txt" > inheritcommand.txt
+echo "echo \$PATH > process1.txt" >> inheritcommand.txt
+if [ $shell != "bash" ]; then
+	echo "quit" >> inheritcommand.txt
+fi
+
+$shell < inheritcommand.txt
+result=""
+result=$(diff -q process1.txt process2.txt)
+if [ -z "$result" ]; then
+	echo "Child processes inherited test failed"
+else
+	grade=$((grade+5))
+	echo "The child processes inherited test passed. The current grade: $grade"
+	
+fi
+echo
+
+#8. Allow background/foreground execution (&) (5)
+#-------------------------------------------
+echo "8> Checking background/foregraound execution ..."
+
+before=0
+after=0
+before=`ps -e | pgrep  ^loop`
+if [ -z "$before" ]; then
+	before=0
+else 
+	echo "Loop is still running. Killing Loop process..."
+	kill $before
+	echo "Loop process was killed."
+	before=0
+fi
+$shell < backgroundcommand.txt
+	if [ -e "backgroundcheck.txt" ]; then
+		nojob=0
+		nojob=`cat backgroundcheck.txt | grep -c loop `
+		echo $nojob
+		if ((nojob<1)); then
+			echo "The background job test failed."
+		else
+			grade=$((grade+5))
+			echo "The job test passed. The curren grade: $grade"
+	
+		fi
+	else
+		echo "The process file for background execution test did not created. Test failed"
+	fi
+after=`ps -e | pgrep ^loop `
+echo "Loop process Id is $after"
+if  ((after > 0)); then
+#	grade=$((grade+5))
+	echo "Loop is still running in background. Killing Loop"
+	kill $after
+#	
+else
+	echo "Loop was terminated in the shell"
+fi
+echo
+
+#9. Printing/reporting of background processes, (including the jobs command) (10)
+#-------------------------------------------
+echo "9> Checking job printing ..."
+
+
+if [ -e "jobcheck.txt" ]; then
+	rm jobcheck.txt
+	echo "jobcheck.txt removed"
+fi
+
+$shell < jobcommand.txt 
+size=0
+size=`ls -la jobcheck.txt|awk '{print $5}'`
+if ((size>0)); then
+	pid=""
+	pid=`cat jobprocess.txt | grep loop| awk '{print $1}'`
+	nojob=0
+	nojob=`cat jobprocess.txt | grep -c "$pid"`
+	echo $nojob
+	if ((nojob<1)); then
+		echo "The job test failed."
+	else
+		grade=$((grade+10))
+		echo "The job test passed. The curren grade: $grade"
+	
+	fi
+	
+else
+	echo "Job file was not created. Test failed"
+fi
+
+	pid=""
+	pid=`ps -e | grep loop| awk '{print $1}'`
+	echo "PID of the Loop process: $pid"
+	if ((pid>0)); then
+   		kill $pid
+		echo "Loop process was killed."
+	fi
+echo
+
+
+#10. Allow file redirection (> and <) (5)
+#-------------------------------------------
+echo "10> Checking redirection ..."
+
+if [ -e "test.txt" ]; then
+	rm test.txt before.txt
+fi
+ls /home -la > before.txt
+$shell < redirectioncommand.txt > test.txt    # run in $shell
+if [ $shell != "bash" ]; then
+		removeexpr3="ls \/home -la"
+		sed -i -e "/$removeexpr1/d" -e "/$removeexpr2/d" -e "/$removeexpr3/d" test.txt  
+fi
+result=$(diff -q before.txt test.txt)
+if [ -z "$result" ]; then
+	grade=$((grade+5))
+	echo "Redirection test passed. Current grade: $grade"
+else
+	echo "The result file is not correct. Test failed."
+	
+fi
+echo
+
+
+
+
+#11. Allow (1) pipe (|) (10)
+#------------------------------------------
+
+echo "11> Checking pipe ..."
+
+rm -f *.rpt
+ls /home -la |sort -r > report.rpt
+$shell < pipecommand.txt > pipe.rpt
+if [ -e "pipe.rpt" ]; then
+	if [ $shell != "bash" ]; then
+		removeexpr3="ls \/home -la |sort -r"
+		sed -i -e "/$removeexpr1/d" -e "/$removeexpr2/d" -e "/$removeexpr3/d" pipe.rpt 
+	fi
+	result=$(diff -q report.rpt pipe.rpt)
+	if [ -z "$result" ]; then
+		grade=$((grade+10))
+		echo "Pipe test passed. Current grade: $grade"
+	else
+		echo "The content of the result file is different. Test failed."	
+	fi
+else 
+	echo "Result file for pipe was not created. Pipe test failed"
+fi
+echo
+
+
+
+
+
+#12. Supports reading commands from prompt and from file (10)
+#-------------------------------------------
+echo
+echo "12> Checking execution from file ..."
+if [ -e "report.txt" ]; then
+	rm report.txt
+fi 
+
+$shell < readinginput.txt
+if [ -e "report.txt" ]; then      
+	result=`cat < report.txt | grep -c "Environments Variables"`
+	if ((result > 0)); then
+		grade=$((grade+10))
+		echo "Reading commands from input file passed. The current grade: $grade"
+	else
+		echo "Reading commands from input file failed"
+	fi
+else
+		echo "conld not create report.txt file. Test failed."
+fi
+
+echo
+echo "**************************"
+echo "Start grading bonus points"
+echo
+if ((grade>0)); then
+	#14. Bonus points (you can get bonus points only if you have everything else working (or very
+	#close to working))
+	#a. Support multiple pipes in one command. (10)
+	#-------------------------------------------
+	echo "13> Checking multiple pipe ..."
+	if [ -e "pipe.rpt" ]; then
+		rm pipe.rpt
+	fi
+	find  | sort -r | head -n 2 > report.rpt
+	$shell < multipipecommand.txt > pipe.rpt
+	if [ -e "pipe.rpt" ]; then
+		if [ $shell != "bash" ]; then
+		    removeexpr3="find  |sort -r|head -n 2"	
+		    sed -i -e "/$removeexpr1/d" -e "/$removeexpr2/d" -e "/$removeexpr3/d" pipe.rpt 
+		fi
+		result=$(diff -q report.rpt pipe.rpt)
+		if [ -z "$result" ]; then
+			grade=$((grade+10))
+			echo "Multipipe test passed. Current grade: $grade"
+			
+		fi
+	else 
+		echo "Result file for multipipe was not created. Multipipe test failed"
+	fi
+	echo
+
+	#b. kill command delivers signals to background processes. The kill command has
+	#the format: killSIGNUMJOBID, where SIGNUM is an integer specifying the
+	#signal number, and JOBID is an integer that specifies the job that should receive
+	#the signal. (5)
+	#-------------------------------------------
+	echo "14> Killing a process"
+
+	./loop &
+	pid=""
+	pid=`ps -e | grep loop| awk '{print $1}'`
+	echo "Process id of Loop: $pid"	
+	if [ -n $pid ]; then
+		echo "kill -SIGKILL $pid" > killcommand.txt
+		if [ $shell != "bash" ]; then
+			echo "quit" >> killcommand.txt
+		fi
+		$shell < killcommand.txt
+		pid=""
+		pid=`ps -e | grep loop| awk '{print $1}'`
+		if [ -z "$pid" ]; then
+			grade=$((grade+10))
+			echo "Kill test passed. The current grade : $grade"
+		else
+			echo "Kill failed."
+		fi
+	else
+		echo "The process failed to create. Check the script."
+	fi
+	echo
+		
+else
+	echo "This student is not elegible for bonus point. His/her current point is: $grade"
+fi
+
+echo ""
+echo "The final grade is $grade"

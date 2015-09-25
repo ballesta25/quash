@@ -1,0 +1,3 @@
+./loop &
+ps -e > backgroundcheck.txt
+quit

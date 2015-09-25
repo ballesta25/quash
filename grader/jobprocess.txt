@@ -1,0 +1,9 @@
+  PID TTY          TIME CMD
+57741 pts/9    00:00:00 bash
+57827 pts/9    00:00:00 grader
+57908 pts/9    00:00:00 quash
+57909 pts/9    00:00:00 quash
+57910 pts/9    00:00:00 quash
+57911 pts/9    00:00:00 ps
+57912 pts/9    00:00:00 loop
+57913 pts/9    00:00:00 quash

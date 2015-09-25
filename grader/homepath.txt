@@ -1,0 +1,7 @@
+set HOME=/home
+echo $HOME > homecheck.txt
+set PATH=/home
+echo $PATH > pathcheck.txt
+quit
+
+

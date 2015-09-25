@@ -1,0 +1,4 @@
+./loop &
+ps > jobprocess.txt
+jobs > jobcheck.txt
+quit
