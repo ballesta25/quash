@@ -227,6 +227,11 @@ int execSimple(simpleCmd* cmd, int* pipeIn, int* pipeOut)
 
 			exit(0);
 		}
+		else if (pipeIn != NULL)
+		{
+			close(pipeIn[0]);
+			close(pipeIn[1]);
+		}
 		return pid;
 	}
 
